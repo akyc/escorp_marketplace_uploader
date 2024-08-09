@@ -1,10 +1,23 @@
 import { useEffect, useState } from "react";
 import { API } from "./utils/Api";
-import { Col, Container, Form, Row, Button, Spinner } from "react-bootstrap";
+import { LinksTable } from "./LinksTable";
+import {
+  Col,
+  Container,
+  Form,
+  Row,
+  Button,
+  Spinner,
+  Alert,
+} from "react-bootstrap";
 
 function App() {
   const [loadingGoogle, setLoadingGoogle] = useState(true);
-  const [loadingUploding, setLoadingUploading] = useState(true);
+  const [loadingUploding, setLoadingUploading] = useState(false);
+  const [hasError, serHasError] = useState(false);
+  const [links, setLinks] = useState();
+
+  let errors = [];
 
   function handleSubmit(e) {
     e.preventDefaul();
@@ -12,10 +25,10 @@ function App() {
   }
 
   useEffect(() => {
-    // API.getUploadedInfo().then(data => {
-    //   console.log(data)
-    //   setLoadingGoogle(false)
-    // })
+    API.getUploadedInfo().then((data) => {
+      setLinks(data);
+      setLoadingGoogle(false);
+    });
   }, []);
 
   return (
@@ -36,7 +49,13 @@ function App() {
               </Form.Group>
               {loadingUploding ? (
                 <Button variant="primary" type="submit" disabled>
-                  <Spinner animation="border" role="status" size="sm" as="span">Загрузка</Spinner>
+                  <Spinner
+                    animation="border"
+                    role="status"
+                    size="sm"
+                    as="span"
+                  ></Spinner>{" "}
+                  Загрузка...
                 </Button>
               ) : (
                 <Button variant="primary" type="submit">
@@ -44,6 +63,15 @@ function App() {
                 </Button>
               )}
             </Form>
+          </Col>
+        </Row>
+        <Row className="justify-content-md-center">
+          <Col md="6" className="py-3">
+            {hasError && (
+              <Alert variant="danger">
+                Произошла ошибка при загрузке: {errors.join(",")}
+              </Alert>
+            )}
           </Col>
         </Row>
       </Container>
@@ -57,6 +85,7 @@ function App() {
               <p>Загрузка данных из Google...</p>
             </Col>
           )}
+          {!loadingGoogle && <LinksTable links={links} />}
         </Row>
       </Container>
     </div>
