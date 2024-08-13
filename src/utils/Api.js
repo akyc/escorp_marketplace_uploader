@@ -13,7 +13,7 @@ export const API = {
   },
 
   UploadImage(data) {
-    return fetch(IMBB_PATH + '?expiration=2678400&key=' +IMBB_API_KEY, {
+    return fetch(IMBB_PATH + '?expiration=2678400&key=' + IMBB_API_KEY, {
       method: "POST",
       body: data,
     }).then(checkResponse);

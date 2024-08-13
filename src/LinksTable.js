@@ -29,7 +29,7 @@ export const LinksTable = ({ links }) => {
     }
 
     const clickHandler = () => {
-        const text = renderData.map(([a,b,c,d]) => )
+        const image_url = renderData.map(([a,b,c,d]) => b).join('\n')
         navigator.clipboard.writeText(image_url).then(() => {
             setIsCopy(true);
             setTimeout(() => {
