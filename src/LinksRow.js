@@ -48,7 +48,7 @@ export const LinkRow = ({ info }) => {
             <td>
                 <img src={thumb_url} alt="" width="100" />
             </td>
-            <td>{date}</td>
+            <td>{new Date(date).toLocaleString('ru-RU')}</td>
             <td>{filename}</td>
             <td>{image_url}</td>
             <td>
