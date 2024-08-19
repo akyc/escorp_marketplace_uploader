@@ -132,7 +132,7 @@ function App() {
               <Spinner animation="border" role="status" className="mb-2">
                 <span className="visually-hidden">Loading...</span>
               </Spinner>
-              <p>Загрузка данных из Google...</p>
+              <p>Получение данных из Google...</p>
             </Col>
           )}
           {!loadingGoogle && <LinksTable links={links} />}
