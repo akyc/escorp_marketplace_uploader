@@ -12,10 +12,10 @@ export const API = {
     return fetch(GOOGLE_PATH).then(checkResponse);
   },
 
-  UploadImage(data) {
+  UploadImage(body) {
     return fetch(IMBB_PATH + '?expiration=2678400&key=' + IMBB_API_KEY, {
       method: "POST",
-      body: data,
+      body,
     }).then(checkResponse);
   },
 

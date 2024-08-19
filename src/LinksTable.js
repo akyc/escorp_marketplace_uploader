@@ -15,6 +15,9 @@ export const LinksTable = ({ links }) => {
     const [renderData, setRenderData] = useState(links)
     const [searchQuery, setSearchQuery] = useState('')
     const changeHandler = (e) =>{
+        if(searchQuery && !e.target.value){
+            setRenderData(links)
+        }
         setSearchQuery(e.target.value)
     }
     const submitHandler = (e) => {
