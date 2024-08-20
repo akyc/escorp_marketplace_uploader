@@ -3,6 +3,8 @@ const IMBB_PATH = "https://api.imgbb.com/1/upload",
     "https://script.google.com/macros/s/AKfycbwim7O-YadiWZ42Ixu8aHuB486mY1tvM6COk5YOcroVrWCpA0-Wp8_bvn7z-8TMqLWkfQ/exec",
   IMBB_API_KEY = "b614a7e1c06dc17e2b73be7b41af9d7b";
 
+console.log()
+
 const checkResponse = (res) => {
   return res.ok ? res.json() : Promise.reject(res);
 };
