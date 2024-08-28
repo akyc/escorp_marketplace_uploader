@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { API } from "./utils/Api";
+import { API, Helpers } from "./utils/Api";
 import { LinksTable } from "./LinksTable";
 import { Error } from "./Error";
 import {
@@ -22,7 +22,10 @@ function App() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     setLoadingUploading(true)
+    setLoadingErrors([])
+
     const uploadingFiles = Object.values(form).map(file => {
       const formData = new FormData()
       formData.append('image', file)
@@ -31,6 +34,7 @@ function App() {
         return data
       }).catch(err => {
         setProgress((p) => p + Math.floor(100 / form.length))
+        console.log(err)
         let error = err.json()
         error.then(info => {
           setLoadingErrors((errors) => {
@@ -44,29 +48,55 @@ function App() {
     })
 
     Promise
-      .allSettled(uploadingFiles)
+      .all(uploadingFiles)
       .then(results => {
-        let uploadedImages = results.filter(result => result.status === "fulfilled" && result.value)
-        Promise.allSettled(uploadedImages.map((result, index) => {
-          return new Promise((resolve, reject) => {
-            setTimeout(() => {
-              let formData = new FormData()
-              formData.append('filename', result.value.data.image.filename)
-              formData.append('image_url', result.value.data.image.url)
-              formData.append('thumb_url', result.value.data.thumb.url)
-              API.storeUploadedInfo(formData).then(() => resolve())
-            }, index * 200)
+        let uploadedImages = Helpers.chunk(results, 10)
+
+        Promise.all(uploadedImages.map((result, index) => {
+          console.log(result)
+          // return new Promise((resolve, reject) => {
+          //   setTimeout(() => {
+          //     let formData = new FormData()
+          //     formData.append('filename', result.value.data.image.filename)
+          //     formData.append('image_url', result.value.data.image.url)
+          //     formData.append('thumb_url', result.value.data.thumb.url)
+          //     API.storeUploadedInfo(formData).then(() => resolve())
+          //   }, index * 200)
+          // })
+          // return new Promise((resolve) => {
+          //   let data = result.map((link) => ({
+          //     'filename': link.value.data.image.filename,
+          //     'image_url': link.value.data.image.url,
+          //     'thumb_url': link.value.data.thumb.url
+          //   }))
+          //   API.storeUploadedInfo({ "links": data }, "json").then(() => resolve())
+          // })
+          return new Promise((resolve) => {
+            let formData = new FormData()
+            result.forEach((link) => {
+              formData.append('links[]', `${link.value.data.image.filename};${link.value.data.image.url};${link.value.data.thumb.url}`)
+            })
+            API.storeUploadedInfo(formData).then(() => resolve()).catch(err => {
+              let error = err.json()
+              error.then(info => {
+                setLoadingErrors((errors) => {
+                  errors.push({ info })
+                  return errors
+                })
+              })
+            })
           })
 
 
         })).then(resp => {
-          console.log("resp ", resp)
+          // console.log("resp ", resp)
           setLoadingUploading(false)
         }).catch(error => console.log('error: ', error)).finally(() => {
           if (!loadingErrors.length) {
-            setLoadingGoogle(true);
-            setForm()
-            setLinks();
+            //window.location.reload()
+            // setLoadingGoogle(true);
+            // setForm()
+            // setLinks();
           }
         });
       })

@@ -1,7 +1,9 @@
 # escorp_marketplace_uploader
 
-Загрeзка картинок для маркетgлейсов в imgbb.com с сохранением ссылки в google sheets
-Ответ imgbb.com на POST запрос с изображением `image.jpg`
+Загрузка картинок для маркетgлейсов в imgbb.com с сохранением ссылки в google sheets
+
+Ответ imgbb.com на POST запрос с изображением `image.jpg`.
+[Документация](https://api.imgbb.com/).
 
 ```code
 {
