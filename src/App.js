@@ -30,7 +30,6 @@ function App() {
       const formData = new FormData()
       formData.append('image', file)
       return API.UploadImage(formData).then(data => {
-        setProgress((p) => p + Math.floor(100 / form.length))
         return data
       }).catch(err => {
         if (err) {
@@ -53,8 +52,7 @@ function App() {
     Promise
       .all(uploadingFiles)
       .then(results => {
-        results.forEach((result) => console.log(result.status))
-        let uploadedImages = results
+        let uploadedImages = results.filter(el => el.status === 200)
         return Promise
           .allSettled(uploadedImages.map((result, index) => {
             return new Promise((resolve, reject) => {
@@ -62,7 +60,7 @@ function App() {
                 let formData = new FormData()
                 formData.append('links[]', `${result.data.image.filename};${result.data.image.url};${result.data.thumb.url}`)
                 API.storeUploadedInfo(formData).then(() => resolve())
-              }, index * 350)
+              }, index * 500)
             })
           }))
           .catch(err => {
@@ -77,7 +75,7 @@ function App() {
             }
           })
       })
-      .then(resp => {
+      .then(() => {
         setLoadingUploading(false)
       })
       .catch(err => {
@@ -103,7 +101,7 @@ function App() {
       setLinks(data);
       setLoadingGoogle(false);
     });
-  }, [links]);
+  }, []);
 
   return (
     <div className="App">
