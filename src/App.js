@@ -26,10 +26,6 @@ function App() {
     setLoadingUploading(true)
     setLoadingErrors([])
 
-    const errorHandler = (error) => {
-      
-    }
-
     const uploadingFiles = Object.values(form).map(file => {
       const formData = new FormData()
       formData.append('image', file)
@@ -37,36 +33,30 @@ function App() {
         setProgress((p) => p + Math.floor(100 / form.length))
         return data
       }).catch(err => {
-        setProgress((p) => p + Math.floor(100 / form.length))
-        console.log(err)
-        let error = err.json()
-        error.then(info => {
-          setLoadingErrors((errors) => {
-            if (!errors.some(err => err.file.name === file.name)) {
-              errors.push({ info, file })
-            }
-            return errors
+        if (err) {
+          let error = err.json()
+          error.then(info => {
+            setLoadingErrors((errors) => {
+              if (!errors.some(err => err.file.name === file.name)) {
+                errors.push({ info, file })
+              }
+              return errors
+            })
           })
-        })
+        }
+      }).finally((data) => {
+        setProgress((p) => p + Math.floor(100 / form.length))
+        return data
       })
     })
 
     Promise
       .all(uploadingFiles)
       .then(results => {
-
         results.forEach((result) => console.log(result.status))
-
-        // let uploadedImages = Helpers.chunk(results, 10)
         let uploadedImages = results
         return Promise
           .allSettled(uploadedImages.map((result, index) => {
-            // let formData = new FormData()
-            // result.forEach((link) => {
-            //   console.log(link)
-            //   formData.append('links[]', `${link.data.image.filename};${link.data.image.url};${link.data.thumb.url}`)
-            // })
-            // return API.storeUploadedInfo(formData)
             return new Promise((resolve, reject) => {
               setTimeout(() => {
                 let formData = new FormData()
@@ -75,17 +65,32 @@ function App() {
               }, index * 350)
             })
           }))
-          .then(resp => {
-            console.log("allSettled resp: ", resp)
-            //setLoadingUploading(false)
+          .catch(err => {
+            if (err) {
+              let error = err.json()
+              error.then(info => {
+                setLoadingErrors((errors) => {
+                  errors.push({ info, results: JSON.stringify(results) })
+                  return errors
+                })
+              })
+            }
           })
-          .catch(error => console.log('error: ', error))
       })
       .then(resp => {
-        console.log("Promise.all resp: ", resp)
         setLoadingUploading(false)
       })
-      .catch(error => console.log('error: ', error))
+      .catch(err => {
+        if (err) {
+          let error = err.json()
+          error.then(info => {
+            setLoadingErrors((errors) => {
+              errors.push({ info })
+              return errors
+            })
+          })
+        }
+      })
       .finally(_ => {
         if (!loadingErrors.length) {
           window.location.reload()
