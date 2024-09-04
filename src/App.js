@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { API } from "./utils/Api";
 import { supabase } from './utils/supabase';
 import { LinksTable } from "./LinksTable";
@@ -19,6 +19,7 @@ function App() {
   const [loadingErrors, setLoadingErrors] = useState([]);
   const [links, setLinks] = useState();
   const [form, setForm] = useState([]);
+  const fileInputRef = useRef(null);
   const [progress, setProgress] = useState(0);
 
   const handleSubmit = (e) => {
@@ -30,7 +31,6 @@ function App() {
     const uploadingFiles = Object.values(form).map(file => {
       const formData = new FormData()
       formData.append('image', file)
-      console.log(file)
       return API.UploadImage(formData).then(data => {
         setProgress((p) => p + Math.floor(100 / form.length))
         return data
@@ -46,6 +46,7 @@ function App() {
         setUploadedFiles(links)
         setLoadingUploading(false)
         setForm([])
+        fileInputRef.current.value = null
         setLoadingSupabase(true);
       })
       .catch(err => {
@@ -56,18 +57,26 @@ function App() {
           })
         }
       })
-    // .finally(_ => {
-    //   if (!loadingErrors.length) {
-    //     window.location.reload()
-    //   }
-    // });
   }
 
   async function setUploadedFiles(files) {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('uploaded_files')
       .insert(files)
-      .select()
+
+    getUploadedFiles()
+
+    if (error) {
+      console.error(error)
+    }
+
+  }
+
+  async function getUploadedFiles() {
+
+    let { data, error } = await supabase
+      .from('uploaded_files')
+      .select('*')
 
     setLinks(data);
     setLoadingSupabase(false);
@@ -79,21 +88,6 @@ function App() {
   }
 
   useEffect(() => {
-
-    async function getUploadedFiles() {
-
-      let { data, error } = await supabase
-        .from('uploaded_files')
-        .select('*')
-
-      setLinks(data);
-      setLoadingSupabase(false);
-
-      if (error) {
-        console.error(error)
-      }
-
-    }
 
     getUploadedFiles()
 
@@ -114,6 +108,7 @@ function App() {
                     setForm(e.target.files)
                   }}
                   multiple
+                  ref={fileInputRef}
                 />
                 <Form.Text className="text-muted">
                   Файлы для маркетлейсов только в формате .jpg и .png
@@ -130,7 +125,7 @@ function App() {
                   Загрузка...
                 </Button>
               ) : (
-                <Button variant="primary" type="submit">
+                <Button variant="primary" type="submit" disabled={form.length ? '' : 'disabled'}>
                   Загрузить
                 </Button>
               )}

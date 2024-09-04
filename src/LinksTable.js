@@ -11,9 +11,9 @@ import {
 
 
 export const LinksTable = ({ links }) => {
-    
+
     const [isCopy, setIsCopy] = useState()
-    const [renderData, setRenderData] = useState(links)
+    const [renderData, setRenderData] = useState(links.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)))
     const [searchQuery, setSearchQuery] = useState('')
     const changeHandler = (e) => {
         if (searchQuery && !e.target.value) {
