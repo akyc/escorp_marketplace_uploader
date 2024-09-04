@@ -1,6 +1,8 @@
 # escorp_marketplace_uploader
 
-Загрузка картинок для маркетgлейсов в imgbb.com с сохранением ссылки в google sheets
+Загрузка картинок для маркетgлейсов в imgbb.com с сохранением данных об изображении в Supabase.
+
+Для запросов в imgbb.com использовать `REACT_APP_IMBB_API_KEY` в `.env`.
 
 Ответ imgbb.com на POST запрос с изображением `image.jpg`.
 [Документация](https://api.imgbb.com/).
@@ -44,4 +46,26 @@
     "success": true,
     "status": 200
 }
+```
+
+Для запросов в Supabase использовать `REACT_APP_SUPABASE_URL` и `REACT_APP_SUPABASE_ANON_KEY` в `.env`.
+[Документация](https://supabase.com/docs/reference/javascript/introduction)
+
+```
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+//Read rows
+let { data, error } = await supabase
+  .from('uploaded_files')
+  .select('*')
+
+//Insert rows
+const { data, error } = await supabase
+  .from('uploaded_files')
+  .insert([
+    { some_column: 'someValue' },
+    { some_column: 'otherValue' },
+  ])
+  .select()
+
 ```
