@@ -11,6 +11,7 @@ import {
 
 
 export const LinksTable = ({ links }) => {
+    
     const [isCopy, setIsCopy] = useState()
     const [renderData, setRenderData] = useState(links)
     const [searchQuery, setSearchQuery] = useState('')
@@ -23,7 +24,7 @@ export const LinksTable = ({ links }) => {
     const submitHandler = (e) => {
         e.preventDefault()
         if (searchQuery) {
-            let searchResult = links.filter(([filename, a, b, date]) => filename.includes(searchQuery) || (new Date(date).toLocaleString('ru-RU')).includes(searchQuery))
+            let searchResult = links.filter(({ name, created_at }) => name.includes(searchQuery) || (new Date(created_at).toLocaleString('ru-RU')).includes(searchQuery))
             setRenderData(searchResult)
         } else {
             setRenderData(links)
@@ -32,7 +33,7 @@ export const LinksTable = ({ links }) => {
     }
 
     const clickHandler = () => {
-        const image_url = renderData.map(([a, b, c, d]) => b).join('\n')
+        const image_url = renderData.map(({ image_url }) => image_url).join('\n')
         navigator.clipboard.writeText(image_url).then(() => {
             setIsCopy(true);
             setTimeout(() => {
@@ -72,14 +73,14 @@ export const LinksTable = ({ links }) => {
     };
     return (
         <>
-            <h5 className={'text-center pb-2'}>Ранее загруженные файлы</h5>
+            <h5 className={'text-center pb-2'}>Загруженные файлы</h5>
             <Form onSubmit={submitHandler}>
                 <InputGroup className="mb-3">
                     <Form.Control
                         name={'search'}
                         onChange={(e) => changeHandler(e)}
                         placeholder="Поиск по файлам"
-                        aria-label="Recipient's username"
+                        aria-label="Поиск по файлам"
                         aria-describedby="basic-addon2"
                     />
                     <Button type={'submit'} variant="outline-secondary" id="button-addon2">
@@ -104,7 +105,7 @@ export const LinksTable = ({ links }) => {
                 <tbody>
                     {renderData.length ? renderData.map((info, i) => (
                         <LinkRow key={i} info={info} />
-                    )) : (<tr><td colSpan="5" align={'center'}>По запросу ссылки на файлы не найдены </td></tr>)}
+                    )) : (<tr><td colSpan="5" align={'center'}>Cсылки на файлы не найдены </td></tr>)}
                 </tbody>
             </Table>
         </>

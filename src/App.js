@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { API } from "./utils/Api";
+import { supabase } from './utils/supabase';
 import { LinksTable } from "./LinksTable";
 import { Error } from "./Error";
 import {
@@ -13,7 +14,7 @@ import {
 } from "react-bootstrap";
 
 function App() {
-  const [loadingGoogle, setLoadingGoogle] = useState(true);
+  const [loadingSupabase, setLoadingSupabase] = useState(true);
   const [loadingUploding, setLoadingUploading] = useState(false);
   const [loadingErrors, setLoadingErrors] = useState([]);
   const [links, setLinks] = useState();
@@ -29,78 +30,73 @@ function App() {
     const uploadingFiles = Object.values(form).map(file => {
       const formData = new FormData()
       formData.append('image', file)
+      console.log(file)
       return API.UploadImage(formData).then(data => {
-        return data
-      }).catch(err => {
-        if (err) {
-          let error = err.json()
-          error.then(info => {
-            setLoadingErrors((errors) => {
-              if (!errors.some(err => err.file.name === file.name)) {
-                errors.push({ info, file })
-              }
-              return errors
-            })
-          })
-        }
-      }).finally((data) => {
         setProgress((p) => p + Math.floor(100 / form.length))
         return data
       })
     })
 
     Promise
-      .all(uploadingFiles)
+      .allSettled(uploadingFiles)
       .then(results => {
-        let uploadedImages = results.filter(el => el.status === 200)
-        return Promise
-          .allSettled(uploadedImages.map((result, index) => {
-            return new Promise((resolve, reject) => {
-              setTimeout(() => {
-                let formData = new FormData()
-                formData.append('links[]', `${result.data.image.filename};${result.data.image.url};${result.data.thumb.url}`)
-                API.storeUploadedInfo(formData).then(() => resolve())
-              }, index * 500)
-            })
-          }))
-          .catch(err => {
-            if (err) {
-              let error = err.json()
-              error.then(info => {
-                setLoadingErrors((errors) => {
-                  errors.push({ info, results: JSON.stringify(results) })
-                  return errors
-                })
-              })
-            }
-          })
-      })
-      .then(() => {
+        let links = results.filter(el => el.value.status === 200).map(({ value }) => ({
+          "name": value.data.image.filename, "image_url": value.data.image.url, "thumb_url": value.data.thumb.url
+        }))
+        setUploadedFiles(links)
         setLoadingUploading(false)
+        setForm([])
+        setLoadingSupabase(true);
       })
       .catch(err => {
         if (err) {
-          let error = err.json()
-          error.then(info => {
-            setLoadingErrors((errors) => {
-              errors.push({ info })
-              return errors
-            })
+          setLoadingErrors((errors) => {
+            errors.push({ err })
+            return errors
           })
         }
       })
-      .finally(_ => {
-        if (!loadingErrors.length) {
-          window.location.reload()
-        }
-      });
+    // .finally(_ => {
+    //   if (!loadingErrors.length) {
+    //     window.location.reload()
+    //   }
+    // });
+  }
+
+  async function setUploadedFiles(files) {
+    const { data, error } = await supabase
+      .from('uploaded_files')
+      .insert(files)
+      .select()
+
+    setLinks(data);
+    setLoadingSupabase(false);
+
+    if (error) {
+      console.error(error)
+    }
+
   }
 
   useEffect(() => {
-    API.getUploadedInfo().then((data) => {
+
+    async function getUploadedFiles() {
+
+      let { data, error } = await supabase
+        .from('uploaded_files')
+        .select('*')
+
       setLinks(data);
-      setLoadingGoogle(false);
-    });
+      setLoadingSupabase(false);
+
+      if (error) {
+        console.error(error)
+      }
+
+    }
+
+    getUploadedFiles()
+
   }, []);
 
   return (
@@ -150,15 +146,15 @@ function App() {
       </Container>
       <Container>
         <Row className="justify-content-md-center">
-          {loadingGoogle && (
+          {loadingSupabase && (
             <Col md="10" className="text-center">
-              <Spinner animation="border" role="status" className="mb-2">
+              <Spinner animation="border" role="status" className="mb-3">
                 <span className="visually-hidden">Loading...</span>
               </Spinner>
-              <p>Получение данных из Google...</p>
+              <p>Получение данных из Supabase...</p>
             </Col>
           )}
-          {!loadingGoogle && <LinksTable links={links} />}
+          {!loadingSupabase && <LinksTable links={links} />}
         </Row>
       </Container>
     </div>

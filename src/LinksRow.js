@@ -2,7 +2,7 @@ import { Button } from "react-bootstrap";
 import { useState } from "react";
 
 export const LinkRow = ({ info }) => {
-    let [filename, image_url, thumb_url, date] = info;
+    let { name, image_url, thumb_url, created_at } = info;
     const [isCopy, setIsCopy] = useState(false);
 
     const Icon = () => {
@@ -48,8 +48,8 @@ export const LinkRow = ({ info }) => {
             <td>
                 <img src={thumb_url} alt="" width="100" />
             </td>
-            <td>{new Date(date).toLocaleString('ru-RU')}</td>
-            <td>{filename}</td>
+            <td>{new Date(created_at).toLocaleString('ru-RU')}</td>
+            <td>{name}</td>
             <td>{image_url}</td>
             <td>
                 <Button variant="light" size="sm" onClick={clickHandler}><Icon /></Button>

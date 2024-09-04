@@ -1,3 +1,4 @@
+
 const IMBB_PATH = "https://api.imgbb.com/1/upload",
   APP_SCRIPT_ID = process.env.REACT_APP_APP_SCRIPT_ID,
   GOOGLE_PATH = `https://script.google.com/macros/s/${APP_SCRIPT_ID}/exec`,
@@ -8,34 +9,11 @@ const checkResponse = (res) => {
 };
 
 export const API = {
-  getUploadedInfo: () => {
-    return fetch(GOOGLE_PATH).then(checkResponse);
-  },
-
   UploadImage(body) {
     return fetch(IMBB_PATH + '?key=' + IMBB_API_KEY, {
       method: "POST",
       body,
     }).then(checkResponse);
-  },
-
-  storeUploadedInfo(data, type = "formdata") {
-    let requestConfig = {
-      method: "POST"
-    }
-    if (type === "formdata") {
-      requestConfig["body"] = data
-    }
-    if (type === "json") {
-      requestConfig["headers"] = {
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Origin": "*",
-        'Content-Type': 'application/json',
-        "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PATCH"
-      }
-      requestConfig["body"] = JSON.stringify(data)
-    }
-    return fetch(GOOGLE_PATH, requestConfig).then(checkResponse);
   },
 };
 
